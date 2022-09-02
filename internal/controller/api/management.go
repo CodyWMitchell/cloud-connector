@@ -420,35 +420,32 @@ func convertDomainCanonicalFactsToApiCanonicalFacts(domainCF domain.CanonicalFac
 		return nil
 	}
 
-	if v, ok := inputCF["insights_id"].(string); ok {
-		apiCF.InsightsId = v
-	}
+	apiCF.InsightsId = retrieveStringFromMapOfInterfaces(inputCF, "insights_id")
+	apiCF.MachineId = retrieveStringFromMapOfInterfaces(inputCF, "machine_id")
+	apiCF.BiosUuid = retrieveStringFromMapOfInterfaces(inputCF, "bios_uuid")
+	apiCF.SubscriptionManagerId = retrieveStringFromMapOfInterfaces(inputCF, "subscription_manager_id")
+	apiCF.Fqdn = retrieveStringFromMapOfInterfaces(inputCF, "fqdn")
 
-	if v, ok := inputCF["machine_id"].(string); ok {
-		apiCF.MachineId = v
-	}
-
-	if v, ok := inputCF["bios_uuid"].(string); ok {
-		apiCF.BiosUuid = v
-	}
-
-	if v, ok := inputCF["subscription_manager_id"].(string); ok {
-		apiCF.SubscriptionManagerId = v
-	}
-
-	if v, ok := inputCF["ip_addresses"].([]interface{}); ok {
-		apiCF.IpAddresses = convertArrayInterfaceToArrayString(v)
-	}
-
-	if v, ok := inputCF["mac_addresses"].([]interface{}); ok {
-		apiCF.MacAddresses = convertArrayInterfaceToArrayString(v)
-	}
-
-	if v, ok := inputCF["fqdn"].(string); ok {
-		apiCF.Fqdn = v
-	}
+	apiCF.IpAddresses = retrieveStringArrayFromMapOfInterfaces(inputCF, "ip_addresses")
+	apiCF.MacAddresses = retrieveStringArrayFromMapOfInterfaces(inputCF, "mac_addresses")
 
 	return &apiCF
+}
+
+func retrieveStringFromMapOfInterfaces(m map[string]interface{}, key string) string {
+	if v, ok := m[key].(string); ok {
+		return v
+	}
+
+	return ""
+}
+
+func retrieveStringArrayFromMapOfInterfaces(m map[string]interface{}, key string) []string {
+	if v, ok := m[key].([]interface{}); ok {
+		return convertArrayInterfaceToArrayString(v)
+	}
+
+	return []string{}
 }
 
 func convertArrayInterfaceToArrayString(in []interface{}) []string {

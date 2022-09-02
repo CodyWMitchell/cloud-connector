@@ -181,13 +181,13 @@ var _ = Describe("MessageReceiver", func() {
 			Account:  account,
 			ClientID: "345",
 			CanonicalFacts: map[string]interface{}{
-				"insights_id":             "1234",
-				"machine_id":              "2345",
-				"bios_uuid":               "3456",
+				"insights_id": "1234",
+				"machine_id":  "2345",
+				//"bios_uuid":               "3456",
 				"subscription_manager_id": "4567",
-				"ip_addresses":            []interface{}{"1.2.3.4"},
-				"mac_addresses":           []interface{}{"2.3.4.1", "5.6.7.8"},
-				"fqdn":                    "ima-fully-qualified-domain-name",
+				//"ip_addresses":            []interface{}{"1.2.3.4"},
+				"mac_addresses": []interface{}{"2.3.4.1", "5.6.7.8"},
+				"fqdn":          "ima-fully-qualified-domain-name",
 			},
 			Tags: map[string]string{
 				"tag1": "value1",
@@ -541,7 +541,6 @@ var _ = Describe("MessageReceiver", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(connectionStatusResponse.CanonicalFacts.InsightsId).Should(Equal("1234"))
-				Expect(len(connectionStatusResponse.CanonicalFacts.IpAddresses)).Should(Equal(1))
 				Expect(len(connectionStatusResponse.CanonicalFacts.MacAddresses)).Should(Equal(2))
 
 				Expect(connectionStatusResponse.Tags).Should(HaveKeyWithValue("tag1", "value1"))
