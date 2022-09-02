@@ -83,11 +83,13 @@ type CanonicalFacts struct {
 	Fqdn                  string   `json:"fqdn,omitempty"`
 }
 
+type Tags map[string]string
+
 type connectionStatusResponse struct {
 	Status         string          `json:"status"`
 	Dispatchers    interface{}     `json:"dispatchers,omitempty"`
 	CanonicalFacts *CanonicalFacts `json:"canonical_facts,omitempty"`
-	Tags           interface{}     `json:"tags,omitempty"`
+	Tags           *Tags           `json:"tags,omitempty"`
 }
 
 type connectionPingResponse struct {
@@ -408,28 +410,28 @@ func (s *ManagementServer) handleConnectionPing() http.HandlerFunc {
 
 func convertDomainCanonicalFactsToApiCanonicalFacts(domainCF domain.CanonicalFacts) *CanonicalFacts {
 
-	var apiCF CanonicalFacts
-
 	if domainCF == nil {
 		return nil
 	}
 
-	inputCF := domainCF.(map[string]interface{})
+	inputCF, ok := domainCF.(map[string]interface{})
+	if !ok {
+		return nil
+	}
 
 	if len(inputCF) == 0 {
 		return nil
 	}
 
-	apiCF.InsightsId = retrieveStringFromMapOfInterfaces(inputCF, "insights_id")
-	apiCF.MachineId = retrieveStringFromMapOfInterfaces(inputCF, "machine_id")
-	apiCF.BiosUuid = retrieveStringFromMapOfInterfaces(inputCF, "bios_uuid")
-	apiCF.SubscriptionManagerId = retrieveStringFromMapOfInterfaces(inputCF, "subscription_manager_id")
-	apiCF.Fqdn = retrieveStringFromMapOfInterfaces(inputCF, "fqdn")
-
-	apiCF.IpAddresses = retrieveStringArrayFromMapOfInterfaces(inputCF, "ip_addresses")
-	apiCF.MacAddresses = retrieveStringArrayFromMapOfInterfaces(inputCF, "mac_addresses")
-
-	return &apiCF
+	return &CanonicalFacts{
+		InsightsId:            retrieveStringFromMapOfInterfaces(inputCF, "insights_id"),
+		MachineId:             retrieveStringFromMapOfInterfaces(inputCF, "machine_id"),
+		BiosUuid:              retrieveStringFromMapOfInterfaces(inputCF, "bios_uuid"),
+		SubscriptionManagerId: retrieveStringFromMapOfInterfaces(inputCF, "subscription_manager_id"),
+		Fqdn:                  retrieveStringFromMapOfInterfaces(inputCF, "fqdn"),
+		IpAddresses:           retrieveStringArrayFromMapOfInterfaces(inputCF, "ip_addresses"),
+		MacAddresses:          retrieveStringArrayFromMapOfInterfaces(inputCF, "mac_addresses"),
+	}
 }
 
 func retrieveStringFromMapOfInterfaces(m map[string]interface{}, key string) string {
@@ -460,4 +462,28 @@ func convertArrayInterfaceToArrayString(in []interface{}) []string {
 	}
 
 	return out
+}
+
+func convertDomainTagsToApiTags(domainTags domain.Tags) *Tags {
+
+	if domainTags == nil {
+		return nil
+	}
+
+	inputTags, ok := domainTags.(map[string]interface{})
+	if !ok {
+		return nil
+	}
+
+	if len(inputTags) == 0 {
+		return nil
+	}
+
+	var apiTags Tags = make(Tags)
+
+	for k, v := range inputTags {
+		apiTags[k] = v.(string)
+	}
+
+	return &apiTags
 }

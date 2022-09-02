@@ -189,7 +189,7 @@ var _ = Describe("MessageReceiver", func() {
 				"mac_addresses": []interface{}{"2.3.4.1", "5.6.7.8"},
 				"fqdn":          "ima-fully-qualified-domain-name",
 			},
-			Tags: map[string]string{
+			Tags: map[string]interface{}{
 				"tag1": "value1",
 				"tag2": "value2",
 			},
@@ -543,7 +543,7 @@ var _ = Describe("MessageReceiver", func() {
 				Expect(connectionStatusResponse.CanonicalFacts.InsightsId).Should(Equal("1234"))
 				Expect(len(connectionStatusResponse.CanonicalFacts.MacAddresses)).Should(Equal(2))
 
-				Expect(connectionStatusResponse.Tags).Should(HaveKeyWithValue("tag1", "value1"))
+				Expect(*connectionStatusResponse.Tags).Should(HaveKeyWithValue("tag1", "value1"))
 			})
 		})
 
