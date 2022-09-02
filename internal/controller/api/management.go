@@ -458,7 +458,9 @@ func convertArrayInterfaceToArrayString(in []interface{}) []string {
 	}
 
 	for i, v := range in {
-		out[i] = v.(string)
+		if s, ok := v.(string); ok {
+			out[i] = s
+		}
 	}
 
 	return out
@@ -482,7 +484,9 @@ func convertDomainTagsToApiTags(domainTags domain.Tags) *Tags {
 	var apiTags Tags = make(Tags)
 
 	for k, v := range inputTags {
-		apiTags[k] = v.(string)
+		if s, ok := v.(string); ok {
+			apiTags[k] = s
+		}
 	}
 
 	return &apiTags
