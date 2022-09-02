@@ -73,11 +73,21 @@ type connectionID struct {
 	NodeID  string `json:"node_id" validate:"required"`
 }
 
+type CanonicalFacts struct {
+	InsightsId            string   `json:"insights_id,omitempty"`
+	MachineId             string   `json:"machine_id,omitempty"`
+	BiosUuid              string   `json:"bios_uuid,omitempty"`
+	SubscriptionManagerId string   `json:"subscription_manager_id,omitempty"`
+	IpAddresses           []string `json:"ip_addresses,omitempty"`
+	MacAddresses          []string `json:"mac_addresses,omitempty"`
+	Fqdn                  string   `json:"fqdn,omitempty"`
+}
+
 type connectionStatusResponse struct {
-	Status         string      `json:"status"`
-	Dispatchers    interface{} `json:"dispatchers,omitempty"`
-	CanonicalFacts interface{} `json:"canonical_facts,omitempty"`
-	Tags           interface{} `json:"tags,omitempty"`
+	Status         string          `json:"status"`
+	Dispatchers    interface{}     `json:"dispatchers,omitempty"`
+	CanonicalFacts *CanonicalFacts `json:"canonical_facts,omitempty"`
+	Tags           interface{}     `json:"tags,omitempty"`
 }
 
 type connectionPingResponse struct {
@@ -394,4 +404,63 @@ func (s *ManagementServer) handleConnectionPing() http.HandlerFunc {
 
 		writeJSONResponse(w, http.StatusOK, pingResponse)
 	}
+}
+
+func convertDomainCanonicalFactsToApiCanonicalFacts(domainCF domain.CanonicalFacts) *CanonicalFacts {
+
+	var apiCF CanonicalFacts
+
+	if domainCF == nil {
+		return nil
+	}
+
+	inputCF := domainCF.(map[string]interface{})
+
+	if len(inputCF) == 0 {
+		return nil
+	}
+
+	if v, ok := inputCF["insights_id"].(string); ok {
+		apiCF.InsightsId = v
+	}
+
+	if v, ok := inputCF["machine_id"].(string); ok {
+		apiCF.MachineId = v
+	}
+
+	if v, ok := inputCF["bios_uuid"].(string); ok {
+		apiCF.BiosUuid = v
+	}
+
+	if v, ok := inputCF["subscription_manager_id"].(string); ok {
+		apiCF.SubscriptionManagerId = v
+	}
+
+	if v, ok := inputCF["ip_addresses"].([]interface{}); ok {
+		apiCF.IpAddresses = convertArrayInterfaceToArrayString(v)
+	}
+
+	if v, ok := inputCF["mac_addresses"].([]interface{}); ok {
+		apiCF.MacAddresses = convertArrayInterfaceToArrayString(v)
+	}
+
+	if v, ok := inputCF["fqdn"].(string); ok {
+		apiCF.Fqdn = v
+	}
+
+	return &apiCF
+}
+
+func convertArrayInterfaceToArrayString(in []interface{}) []string {
+	var out []string = make([]string, len(in))
+
+	if len(in) == 0 {
+		return out
+	}
+
+	for i, v := range in {
+		out[i] = v.(string)
+	}
+
+	return out
 }

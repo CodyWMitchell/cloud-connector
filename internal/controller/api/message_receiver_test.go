@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -177,11 +176,18 @@ var _ = Describe("MessageReceiver", func() {
 		apiMux := mux.NewRouter()
 		cfg := config.GetConfig()
 		connectionManager := NewMockConnectionManager()
+
 		connectorClient := domain.ConnectorClientState{
 			Account:  account,
 			ClientID: "345",
-			CanonicalFacts: map[string]string{
-				"foo": "bar",
+			CanonicalFacts: map[string]interface{}{
+				"insights_id":             "1234",
+				"machine_id":              "2345",
+				"bios_uuid":               "3456",
+				"subscription_manager_id": "4567",
+				"ip_addresses":            []interface{}{"1.2.3.4"},
+				"mac_addresses":           []interface{}{"2.3.4.1", "5.6.7.8"},
+				"fqdn":                    "ima-fully-qualified-domain-name",
 			},
 			Tags: map[string]string{
 				"tag1": "value1",
@@ -526,7 +532,6 @@ var _ = Describe("MessageReceiver", func() {
 
 				rr := httptest.NewRecorder()
 
-				fmt.Println("*************** HERE *************")
 				jr.router.ServeHTTP(rr, req)
 
 				Expect(rr.Code).To(Equal(http.StatusOK))
@@ -535,13 +540,11 @@ var _ = Describe("MessageReceiver", func() {
 				err = json.Unmarshal(rr.Body.Bytes(), connectionStatusResponse)
 				Expect(err).NotTo(HaveOccurred())
 
-				canonicalFacts := connectionStatusResponse.CanonicalFacts.(map[string]interface{})
-				fact := canonicalFacts["foo"].(string)
-				Expect(fact).Should(Equal("bar"))
+				Expect(connectionStatusResponse.CanonicalFacts.InsightsId).Should(Equal("1234"))
+				Expect(len(connectionStatusResponse.CanonicalFacts.IpAddresses)).Should(Equal(1))
+				Expect(len(connectionStatusResponse.CanonicalFacts.MacAddresses)).Should(Equal(2))
 
-				tags := connectionStatusResponse.Tags.(map[string]interface{})
-				valueOfTag1 := tags["tag1"].(string)
-				Expect(valueOfTag1).Should(Equal("value1"))
+				Expect(connectionStatusResponse.Tags).Should(HaveKeyWithValue("tag1", "value2"))
 			})
 		})
 
