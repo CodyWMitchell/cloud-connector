@@ -544,7 +544,7 @@ var _ = Describe("MessageReceiver", func() {
 				Expect(len(connectionStatusResponse.CanonicalFacts.IpAddresses)).Should(Equal(1))
 				Expect(len(connectionStatusResponse.CanonicalFacts.MacAddresses)).Should(Equal(2))
 
-				Expect(connectionStatusResponse.Tags).Should(HaveKeyWithValue("tag1", "value2"))
+				Expect(connectionStatusResponse.Tags).Should(HaveKeyWithValue("tag1", "value1"))
 			})
 		})
 
