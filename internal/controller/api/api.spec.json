@@ -729,10 +729,10 @@
             "type": "object"
           },
           "canonical_facts": {
-            "type": "object"
+            "$ref": "#/components/schemas/CanonicalFacts"
           },
           "tags": {
-            "type": "object"
+            "$ref": "#/components/schemas/Tags"
           }
         }
       },
@@ -827,6 +827,52 @@
           "connected",
           "disconnected"
         ]
+      },
+      "CanonicalFacts": {
+        "type": "object",
+        "properties": {
+          "insights_id": {
+            "type": "string",
+            "example": "8d21f37d-bc44-4ade-bdf6-6137f8349af6"
+          },
+          "machine_id": {
+            "type": "string",
+            "example": "8d21f37d-bc44-4ade-bdf6-6137f8349af6"
+          },
+          "bios_uuid": {
+            "type": "string",
+            "example": "8d21f37d-bc44-4ade-bdf6-6137f8349af6"
+          },
+          "subscription_manager_id": {
+            "type": "string",
+            "example": "8d21f37d-bc44-4ade-bdf6-6137f8349af6"
+          },
+          "ip_addresses": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "example": "127.10.62.12"
+            }
+          },
+          "mac_addresses": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "example": "00:00:5e:00:53:af"
+            }
+          },
+          "fqdn": {
+            "type": "string",
+            "example": "fredflintstone.bedrock.com"
+          }
+        }
+      },
+      "Tags": {
+        "type": "object",
+        "example": {
+          "key1": "value1",
+          "key2": "value2"
+        }
       }
     }
   }
