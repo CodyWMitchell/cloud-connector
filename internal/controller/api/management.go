@@ -73,11 +73,23 @@ type connectionID struct {
 	NodeID  string `json:"node_id" validate:"required"`
 }
 
+type CanonicalFacts struct {
+	InsightsId            string   `json:"insights_id,omitempty"`
+	MachineId             string   `json:"machine_id,omitempty"`
+	BiosUuid              string   `json:"bios_uuid,omitempty"`
+	SubscriptionManagerId string   `json:"subscription_manager_id,omitempty"`
+	IpAddresses           []string `json:"ip_addresses,omitempty"`
+	MacAddresses          []string `json:"mac_addresses,omitempty"`
+	Fqdn                  string   `json:"fqdn,omitempty"`
+}
+
+type Tags map[string]string
+
 type connectionStatusResponse struct {
-	Status         string      `json:"status"`
-	Dispatchers    interface{} `json:"dispatchers,omitempty"`
-	CanonicalFacts interface{} `json:"canonical_facts,omitempty"`
-	Tags           interface{} `json:"tags,omitempty"`
+	Status         string          `json:"status"`
+	Dispatchers    interface{}     `json:"dispatchers,omitempty"`
+	CanonicalFacts *CanonicalFacts `json:"canonical_facts,omitempty"`
+	Tags           *Tags           `json:"tags,omitempty"`
 }
 
 type connectionPingResponse struct {
@@ -394,4 +406,88 @@ func (s *ManagementServer) handleConnectionPing() http.HandlerFunc {
 
 		writeJSONResponse(w, http.StatusOK, pingResponse)
 	}
+}
+
+func convertDomainCanonicalFactsToApiCanonicalFacts(domainCF domain.CanonicalFacts) *CanonicalFacts {
+
+	if domainCF == nil {
+		return nil
+	}
+
+	inputCF, ok := domainCF.(map[string]interface{})
+	if !ok {
+		return nil
+	}
+
+	if len(inputCF) == 0 {
+		return nil
+	}
+
+	return &CanonicalFacts{
+		InsightsId:            retrieveStringFromMapOfInterfaces(inputCF, "insights_id"),
+		MachineId:             retrieveStringFromMapOfInterfaces(inputCF, "machine_id"),
+		BiosUuid:              retrieveStringFromMapOfInterfaces(inputCF, "bios_uuid"),
+		SubscriptionManagerId: retrieveStringFromMapOfInterfaces(inputCF, "subscription_manager_id"),
+		Fqdn:                  retrieveStringFromMapOfInterfaces(inputCF, "fqdn"),
+		IpAddresses:           retrieveStringArrayFromMapOfInterfaces(inputCF, "ip_addresses"),
+		MacAddresses:          retrieveStringArrayFromMapOfInterfaces(inputCF, "mac_addresses"),
+	}
+}
+
+func retrieveStringFromMapOfInterfaces(m map[string]interface{}, key string) string {
+	if v, ok := m[key].(string); ok {
+		return v
+	}
+
+	return ""
+}
+
+func retrieveStringArrayFromMapOfInterfaces(m map[string]interface{}, key string) []string {
+	if v, ok := m[key].([]interface{}); ok {
+		return convertArrayInterfaceToArrayString(v)
+	}
+
+	return []string{}
+}
+
+func convertArrayInterfaceToArrayString(in []interface{}) []string {
+	var out []string = make([]string, len(in))
+
+	if len(in) == 0 {
+		return out
+	}
+
+	for i, v := range in {
+		if s, ok := v.(string); ok {
+			out[i] = s
+		}
+	}
+
+	return out
+}
+
+func convertDomainTagsToApiTags(domainTags domain.Tags) *Tags {
+
+	if domainTags == nil {
+		return nil
+	}
+
+	inputTags, ok := domainTags.(map[string]interface{})
+	if !ok {
+		return nil
+	}
+
+	if len(inputTags) == 0 {
+		return nil
+	}
+
+	var apiTags Tags = make(Tags)
+
+	for k, v := range inputTags {
+		if s, ok := v.(string); ok {
+			apiTags[k] = s
+		}
+	}
+
+	return &apiTags
 }
